@@ -1,1 +1,982 @@
 
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ArchiMegapolis — Design & Architecture Studio</title>
+    <meta name="description" content="ArchiMegapolis — Professional architectural design and construction services in Armenia">
+    <style>
+        /* ===== CSS RESET & VARIABLES ===== */
+        :root {
+            --primary: #1a1a2e;
+            --secondary: #c9a96e;
+            --accent: #e8d5b7;
+            --light: #f5f0eb;
+            --dark: #0f0f1a;
+            --text: #333;
+            --text-light: #777;
+            --white: #ffffff;
+            --transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            --shadow: 0 10px 40px rgba(0,0,0,0.1);
+            --shadow-lg: 0 20px 60px rgba(0,0,0,0.15);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; font-size: 16px; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text);
+            background: var(--white);
+            overflow-x: hidden;
+            line-height: 1.7;
+        }
+        img { max-width: 100%; display: block; }
+        a { text-decoration: none; color: inherit; transition: var(--transition); }
+        ul { list-style: none; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+
+        /* ===== SCROLLBAR ===== */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--light); }
+        ::-webkit-scrollbar-thumb { background: var(--secondary); border-radius: 4px; }
+
+        /* ===== LANGUAGE SWITCHER ===== */
+        .lang-switcher {
+            position: fixed; top: 100px; right: 20px; z-index: 10000;
+            display: flex; flex-direction: column; gap: 4px;
+            background: var(--white); padding: 6px; border-radius: 8px;
+            box-shadow: var(--shadow);
+        }
+        .lang-btn {
+            padding: 6px 12px; border: 2px solid transparent; background: transparent;
+            cursor: pointer; font-size: 0.75rem; font-weight: 700; letter-spacing: 1px;
+            text-transform: uppercase; border-radius: 4px; transition: var(--transition); color: var(--text);
+        }
+        .lang-btn:hover, .lang-btn.active {
+            background: var(--secondary); color: var(--white); border-color: var(--secondary);
+        }
+
+        /* ===== PRELOADER ===== */
+        .preloader {
+            position: fixed; inset: 0; background: var(--primary);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 99999; transition: opacity 0.6s, visibility 0.6s;
+        }
+        .preloader.hidden { opacity: 0; visibility: hidden; }
+        .preloader-inner {
+            width: 60px; height: 60px; border: 3px solid var(--secondary);
+            border-top-color: transparent; border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ===== NAVIGATION ===== */
+        .navbar {
+            position: fixed; top: 0; left: 0; width: 100%; z-index: 9999;
+            padding: 20px 0; transition: var(--transition);
+        }
+        .navbar.scrolled {
+            background: rgba(26, 26, 46, 0.97); padding: 12px 0;
+            backdrop-filter: blur(20px); box-shadow: 0 2px 30px rgba(0,0,0,0.2);
+        }
+        .nav-container {
+            max-width: 1200px; margin: 0 auto; padding: 0 20px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .logo { display: flex; align-items: center; gap: 12px; }
+        .logo-img {
+            width: 45px; height: 45px; background: var(--secondary);
+            border-radius: 8px; display: flex; align-items: center; justify-content: center;
+            color: var(--white); font-weight: 800; font-size: 1.2rem;
+        }
+        .logo-text {
+            font-size: 1.4rem; font-weight: 800; color: var(--white);
+            letter-spacing: 1px; line-height: 1.1;
+        }
+        .logo-text span { color: var(--secondary); }
+        .logo-tagline {
+            font-size: 0.65rem; color: rgba(255,255,255,0.7);
+            letter-spacing: 2px; text-transform: uppercase; margin-top: 2px;
+        }
+        .nav-links { display: flex; align-items: center; gap: 30px; }
+        .nav-links a {
+            color: rgba(255,255,255,0.85); font-size: 0.8rem; font-weight: 600;
+            letter-spacing: 1.2px; text-transform: uppercase; position: relative; padding: 5px 0;
+        }
+        .nav-links a::after {
+            content: ''; position: absolute; bottom: 0; left: 0;
+            width: 0; height: 2px; background: var(--secondary); transition: var(--transition);
+        }
+        .nav-links a:hover::after, .nav-links a.active::after { width: 100%; }
+        .nav-links a:hover { color: var(--secondary); }
+
+        .hamburger {
+            display: none; flex-direction: column; gap: 6px; cursor: pointer;
+            z-index: 10001; padding: 5px;
+        }
+        .hamburger span {
+            width: 28px; height: 2px; background: var(--white);
+            transition: var(--transition); border-radius: 2px;
+        }
+        .hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(6px, 6px); }
+        .hamburger.active span:nth-child(2) { opacity: 0; }
+        .hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(6px, -6px); }
+
+        .mobile-nav {
+            display: none; position: fixed; inset: 0;
+            background: rgba(15, 15, 26, 0.98); z-index: 10000;
+            align-items: center; justify-content: center;
+            opacity: 0; visibility: hidden; transition: var(--transition);
+        }
+        .mobile-nav.active { opacity: 1; visibility: visible; }
+        .mobile-nav a {
+            display: block; color: var(--white); font-size: 1.4rem;
+            font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+            padding: 12px 0; text-align: center; transition: var(--transition);
+        }
+        .mobile-nav a:hover { color: var(--secondary); }
+
+        /* ===== HERO SECTION ===== */
+        .hero {
+            position: relative; height: 100vh; min-height: 600px;
+            display: flex; align-items: center; overflow: hidden; background: var(--primary);
+        }
+        .hero-bg {
+            position: absolute; inset: 0;
+            background: linear-gradient(135deg, rgba(15,15,26,0.85) 0%, rgba(26,26,46,0.7) 50%, rgba(15,15,26,0.85) 100%),
+            url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800"><rect fill="%231a1a2e" width="1200" height="800"/><polygon fill="%23c9a96e" opacity="0.1" points="0,800 400,400 800,600 1200,200 1200,800"/></svg>');
+            background-size: cover; background-position: center;
+        }
+        .hero-content { position: relative; z-index: 2; max-width: 750px; padding: 0 20px; }
+        .hero-badge {
+            display: inline-block; padding: 7px 18px; border: 1px solid var(--secondary);
+            color: var(--secondary); font-size: 0.7rem; font-weight: 700;
+            letter-spacing: 2.5px; text-transform: uppercase; margin-bottom: 22px; border-radius: 25px;
+        }
+        .hero h1 {
+            font-size: clamp(2.3rem, 5.5vw, 4rem); font-weight: 800;
+            color: var(--white); line-height: 1.15; margin-bottom: 18px;
+        }
+        .hero h1 span { color: var(--secondary); }
+        .hero p {
+            font-size: 1.05rem; color: rgba(255,255,255,0.75);
+            max-width: 520px; margin-bottom: 35px; line-height: 1.75;
+        }
+        .hero-buttons { display: flex; gap: 18px; flex-wrap: wrap; }
+        .btn {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 14px 32px; font-size: 0.8rem; font-weight: 700;
+            letter-spacing: 1.8px; text-transform: uppercase; border-radius: 4px;
+            transition: var(--transition); cursor: pointer; border: none;
+        }
+        .btn-primary { background: var(--secondary); color: var(--white); }
+        .btn-primary:hover { background: #b8943d; transform: translateY(-2px); box-shadow: 0 10px 30px rgba(201,169,110,0.3); }
+        .btn-outline { background: transparent; color: var(--white); border: 2px solid rgba(255,255,255,0.3); }
+        .btn-outline:hover { border-color: var(--secondary); color: var(--secondary); transform: translateY(-2px); }
+
+        .scroll-indicator {
+            position: absolute; bottom: 35px; left: 50%; transform: translateX(-50%);
+            z-index: 2; display: flex; flex-direction: column; align-items: center;
+            gap: 8px; color: rgba(255,255,255,0.5); font-size: 0.65rem;
+            letter-spacing: 2px; text-transform: uppercase;
+        }
+        .scroll-line {
+            width: 1px; height: 45px; background: linear-gradient(to bottom, var(--secondary), transparent);
+            animation: scrollDown 2s ease infinite;
+        }
+        @keyframes scrollDown { 0%,100%{opacity:1;transform:scaleY(1)} 50%{opacity:0.5;transform:scaleY(0.6)} }
+
+        /* ===== STATS BAR ===== */
+        .stats-bar {
+            background: var(--white); padding: 0; position: relative; z-index: 5;
+            box-shadow: var(--shadow);
+        }
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); }
+        .stat-item {
+            padding: 35px 25px; text-align: center; border-right: 1px solid rgba(0,0,0,0.05);
+            transition: var(--transition);
+        }
+        .stat-item:last-child { border-right: none; }
+        .stat-item:hover { background: var(--light); }
+        .stat-number { font-size: 2.2rem; font-weight: 800; color: var(--secondary); line-height: 1; margin-bottom: 6px; }
+        .stat-label { font-size: 0.75rem; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-light); }
+
+        /* ===== SECTIONS ===== */
+        .section { padding: 90px 0; }
+        .section-header { text-align: center; margin-bottom: 65px; }
+        .section-tag {
+            display: inline-block; color: var(--secondary); font-size: 0.7rem;
+            font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; margin-bottom: 12px;
+        }
+        .section-title {
+            font-size: clamp(1.9rem, 3.8vw, 2.8rem); font-weight: 800;
+            color: var(--primary); margin-bottom: 18px; line-height: 1.2;
+        }
+        .section-subtitle { font-size: 1rem; color: var(--text-light); max-width: 580px; margin: 0 auto; }
+        .section-divider { width: 55px; height: 3px; background: var(--secondary); margin: 18px auto 0; }
+
+        /* ===== ABOUT ===== */
+        .about { background: var(--white); }
+        .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 55px; align-items: center; }
+        .about-image { position: relative; }
+        .about-img-main {
+            width: 100%; height: 450px; background: linear-gradient(135deg, var(--primary), #2a2a4e);
+            border-radius: 8px; display: flex; align-items: center; justify-content: center;
+            overflow: hidden; position: relative;
+        }
+        .about-img-main::before {
+            content: ''; position: absolute; inset: 0;
+            background: repeating-linear-gradient(0deg, transparent, transparent 35px, rgba(201,169,110,0.04) 35px, rgba(201,169,110,0.04) 36px),
+            repeating-linear-gradient(90deg, transparent, transparent 35px, rgba(201,169,110,0.04) 35px, rgba(201,169,110,0.04) 36px);
+        }
+        .arch-icon { position: relative; z-index: 1; }
+        .arch-icon svg { width: 180px; height: 180px; opacity: 0.5; }
+        .about-img-accent {
+            position: absolute; bottom: -18px; right: -18px; width: 180px; height: 180px;
+            border: 3px solid var(--secondary); border-radius: 8px; z-index: -1;
+        }
+        .about-experience {
+            position: absolute; top: 25px; right: -25px; background: var(--secondary);
+            color: var(--white); padding: 22px; border-radius: 8px; text-align: center; z-index: 2;
+        }
+        .about-experience .number { font-size: 2.2rem; font-weight: 800; line-height: 1; }
+        .about-experience .label { font-size: 0.65rem; letter-spacing: 1.8px; text-transform: uppercase; margin-top: 4px; }
+        .about-content h3 { font-size: 1.7rem; font-weight: 800; color: var(--primary); margin-bottom: 18px; }
+        .about-content p { color: var(--text-light); margin-bottom: 14px; line-height: 1.75; }
+        .about-features { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 28px; }
+        .about-feature {
+            display: flex; align-items: center; gap: 10px; padding: 10px 14px;
+            background: var(--light); border-radius: 6px; font-size: 0.85rem; font-weight: 600; color: var(--primary);
+        }
+        .about-feature svg { width: 18px; height: 18px; flex-shrink: 0; color: var(--secondary); }
+
+        /* ===== SERVICES ===== */
+        .services { background: var(--light); }
+        .services-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
+        .service-card {
+            background: var(--white); padding: 40px 32px; border-radius: 8px;
+            transition: var(--transition); position: relative; overflow: hidden;
+        }
+        .service-card::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 3px;
+            background: var(--secondary); transform: scaleX(0); transition: var(--transition);
+        }
+        .service-card:hover::before { transform: scaleX(1); }
+        .service-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); }
+        .service-icon {
+            width: 60px; height: 60px; background: var(--light); border-radius: 10px;
+            display: flex; align-items: center; justify-content: center; margin-bottom: 22px; transition: var(--transition);
+        }
+        .service-card:hover .service-icon { background: var(--secondary); }
+        .service-icon svg { width: 28px; height: 28px; color: var(--secondary); transition: var(--transition); }
+        .service-card:hover .service-icon svg { color: var(--white); }
+        .service-card h3 { font-size: 1.15rem; font-weight: 700; color: var(--primary); margin-bottom: 13px; }
+        .service-card p { color: var(--text-light); font-size: 0.92rem; line-height: 1.65; }
+        .service-number {
+            position: absolute; top: 18px; right: 18px; font-size: 2.5rem;
+            font-weight: 800; color: rgba(0,0,0,0.03); line-height: 1;
+        }
+
+        /* ===== TEAM ===== */
+        .team { background: var(--white); }
+        .team-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
+        .team-card {
+            background: var(--white); border-radius: 8px; overflow: hidden;
+            transition: var(--transition); border: 1px solid rgba(0,0,0,0.05);
+        }
+        .team-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-lg); }
+        .team-photo {
+            width: 100%; height: 260px; display: flex; align-items: center; justify-content: center;
+            position: relative; overflow: hidden; background: linear-gradient(135deg, var(--primary), #2a2a4e);
+        }
+        .team-avatar {
+            width: 75px; height: 75px; border-radius: 50%; background: var(--secondary);
+            display: flex; align-items: center; justify-content: center; color: var(--white);
+            font-size: 1.8rem; font-weight: 700;
+        }
+        .team-info { padding: 22px; text-align: center; }
+        .team-info h3 { font-size: 1.1rem; font-weight: 700; color: var(--primary); margin-bottom: 4px; }
+        .team-info span { color: var(--secondary); font-size: 0.75rem; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; }
+        .team-role { display: block; font-size: 0.8rem; color: var(--text-light); margin-top: 3px; }
+        .team-socials { display: flex; justify-content: center; gap: 8px; margin-top: 12px; }
+        .team-socials a {
+            width: 32px; height: 32px; border-radius: 50%; background: var(--light);
+            display: flex; align-items: center; justify-content: center; transition: var(--transition);
+        }
+        .team-socials a:hover { background: var(--secondary); color: var(--white); }
+        .team-socials svg { width: 14px; height: 14px; }
+
+        /* ===== CONTACT ===== */
+        .contact { background: var(--light); }
+        .contact-grid { display: grid; grid-template-columns: 1fr 1.3fr; gap: 45px; }
+        .contact-info { display: flex; flex-direction: column; gap: 28px; }
+        .contact-info h3 { font-size: 1.4rem; font-weight: 800; color: var(--primary); margin-bottom: 8px; }
+        .contact-info > p { color: var(--text-light); line-height: 1.75; }
+        .contact-item { display: flex; gap: 18px; align-items: flex-start; }
+        .contact-icon {
+            width: 46px; height: 46px; background: var(--secondary); border-radius: 10px;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        }
+        .contact-icon svg { width: 20px; height: 20px; color: var(--white); }
+        .contact-item h4 { font-size: 0.9rem; font-weight: 700; color: var(--primary); margin-bottom: 2px; }
+        .contact-item p, .contact-item a { color: var(--text-light); font-size: 0.92rem; }
+        .contact-item a:hover { color: var(--secondary); }
+        .contact-form { background: var(--white); padding: 40px 35px; border-radius: 8px; box-shadow: var(--shadow); }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+        .form-group { margin-bottom: 18px; }
+        .form-group label {
+            display: block; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.8px;
+            text-transform: uppercase; color: var(--primary); margin-bottom: 7px;
+        }
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%; padding: 12px 16px; border: 2px solid rgba(0,0,0,0.08);
+            border-radius: 6px; font-size: 0.92rem; font-family: inherit;
+            transition: var(--transition); background: var(--light); color: var(--text);
+        }
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+            outline: none; border-color: var(--secondary); background: var(--white);
+        }
+        .form-group textarea { height: 120px; resize: vertical; }
+        .form-submit {
+            width: 100%; padding: 14px; background: var(--secondary); color: var(--white);
+            border: none; border-radius: 6px; font-size: 0.8rem; font-weight: 700;
+            letter-spacing: 1.5px; text-transform: uppercase; cursor: pointer; transition: var(--transition);
+        }
+        .form-submit:hover { background: #b8943d; transform: translateY(-2px); box-shadow: 0 10px 30px rgba(201,169,110,0.3); }
+
+        /* ===== FOOTER ===== */
+        .footer { background: var(--dark); color: rgba(255,255,255,0.7); padding: 70px 0 0; }
+        .footer-grid {
+            display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 35px;
+            padding-bottom: 50px; border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        .footer-about .logo { margin-bottom: 18px; }
+        .footer-about p { line-height: 1.75; margin-bottom: 22px; }
+        .footer-socials { display: flex; gap: 10px; }
+        .footer-socials a {
+            width: 38px; height: 38px; border-radius: 50%; background: rgba(255,255,255,0.06);
+            display: flex; align-items: center; justify-content: center; transition: var(--transition);
+        }
+        .footer-socials a:hover { background: var(--secondary); color: var(--white); }
+        .footer-socials svg { width: 16px; height: 16px; }
+        .footer h4 {
+            color: var(--white); font-size: 0.95rem; font-weight: 700;
+            letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 22px;
+        }
+        .footer-links li { margin-bottom: 10px; }
+        .footer-links a { font-size: 0.88rem; transition: var(--transition); }
+        .footer-links a:hover { color: var(--secondary); padding-left: 4px; }
+        .footer-contact p { margin-bottom: 8px; font-size: 0.9rem; }
+        .footer-contact a { color: var(--secondary); }
+        .footer-bottom {
+            padding: 22px 0; display: flex; justify-content: space-between;
+            align-items: center; flex-wrap: wrap; gap: 12px;
+        }
+        .footer-bottom p { font-size: 0.82rem; }
+
+        /* ===== BACK TO TOP ===== */
+        .back-to-top {
+            position: fixed; bottom: 28px; right: 28px; width: 46px; height: 46px;
+            background: var(--secondary); color: var(--white); border: none; border-radius: 50%;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            opacity: 0; visibility: hidden; transition: var(--transition); z-index: 9998;
+            box-shadow: 0 5px 20px rgba(201,169,110,0.3);
+        }
+        .back-to-top.visible { opacity: 1; visibility: visible; }
+        .back-to-top:hover { transform: translateY(-3px); background: #b8943d; }
+        .back-to-top svg { width: 18px; height: 18px; }
+
+        /* ===== ANIMATIONS ===== */
+        .fade-up { opacity: 0; transform: translateY(35px); transition: opacity 0.7s ease, transform 0.7s ease; }
+        .fade-up.visible { opacity: 1; transform: translateY(0); }
+        .fade-left { opacity: 0; transform: translateX(-35px); transition: opacity 0.7s ease, transform 0.7s ease; }
+        .fade-left.visible { opacity: 1; transform: translateX(0); }
+        .fade-right { opacity: 0; transform: translateX(35px); transition: opacity 0.7s ease, transform 0.7s ease; }
+        .fade-right.visible { opacity: 1; transform: translateX(0); }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 1024px) {
+            .nav-links { display: none; } .hamburger { display: flex; } .mobile-nav { display: flex; }
+            .lang-switcher { top: 75px; right: 12px; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .services-grid { grid-template-columns: repeat(2, 1fr); }
+            .team-grid { grid-template-columns: repeat(2, 1fr); }
+            .footer-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 768px) {
+            .section { padding: 65px 0; }
+            .hero h1 { font-size: 2.3rem; }
+            .hero-buttons { flex-direction: column; }
+            .btn { justify-content: center; }
+            .about-grid { grid-template-columns: 1fr; }
+            .about-experience { right: 15px; }
+            .services-grid { grid-template-columns: 1fr; }
+            .team-grid { grid-template-columns: 1fr; }
+            .contact-grid { grid-template-columns: 1fr; }
+            .contact-form { padding: 32px 22px; }
+            .form-row { grid-template-columns: 1fr; }
+            .footer-grid { grid-template-columns: 1fr; }
+            .footer-bottom { flex-direction: column; text-align: center; }
+        }
+        @media (max-width: 480px) {
+            .stats-grid { grid-template-columns: 1fr; }
+            .stat-item { border-right: none; border-bottom: 1px solid rgba(0,0,0,0.05); }
+            .about-features { grid-template-columns: 1fr; }
+            .lang-switcher { flex-direction: row; top: auto; bottom: 15px; right: 50%; transform: translateX(50%); }
+        }
+
+        /* ===== RTL SUPPORT ===== */
+        html[dir="rtl"] .nav-links a::after { left: auto; right: 0; }
+        html[dir="rtl"] .lang-switcher { right: auto; left: 20px; }
+        html[dir="rtl"] .stat-item { border-right: none; border-left: 1px solid rgba(0,0,0,0.05); }
+        html[dir="rtl"] .stat-item:last-child { border-left: none; }
+        html[dir="rtl"] .about-experience { right: auto; left: -25px; }
+        html[dir="rtl"] .about-img-accent { right: auto; left: -18px; }
+        html[dir="rtl"] .contact-item { direction: rtl; }
+        html[dir="rtl"] .footer-links a:hover { padding-left: 0; padding-right: 4px; }
+        @media (max-width: 1024px) {
+            html[dir="rtl"] .lang-switcher { right: auto; left: 12px; }
+        }
+        @media (max-width: 480px) {
+            html[dir="rtl"] .lang-switcher { left: 50%; transform: translateX(-50%); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Preloader -->
+    <div class="preloader" id="preloader"><div class="preloader-inner"></div></div>
+
+    <!-- Language Switcher -->
+    <div class="lang-switcher">
+        <button class="lang-btn active" data-lang="en">EN</button>
+        <button class="lang-btn" data-lang="hy">ՀԱՅ</button>
+        <button class="lang-btn" data-lang="ru">RU</button>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <a href="#" class="logo">
+                <!-- 🎨 REPLACE THIS WITH YOUR LOGO IMAGE -->
+                <div class="logo-img">AM</div>
+                <div>
+                    <div class="logo-text">Archi<span>Megapolis</span></div>
+                    <div class="logo-tagline">Design & Build</div>
+                </div>
+            </a>
+            <div class="nav-links">
+                <a href="#home" class="active" data-i18n="nav_home">Home</a>
+                <a href="#about" data-i18n="nav_about">About</a>
+                <a href="#services" data-i18n="nav_services">Services</a>
+                <a href="#team" data-i18n="nav_team">Team</a>
+                <a href="#contact" data-i18n="nav_contact">Contact</a>
+            </div>
+            <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>
+        </div>
+    </nav>
+
+    <!-- Mobile Navigation -->
+    <div class="mobile-nav" id="mobileNav">
+        <a href="#home" data-i18n="nav_home">Home</a>
+        <a href="#about" data-i18n="nav_about">About</a>
+        <a href="#services" data-i18n="nav_services">Services</a>
+        <a href="#team" data-i18n="nav_team">Team</a>
+        <a href="#contact" data-i18n="nav_contact">Contact</a>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="hero-bg"></div>
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-badge" data-i18n="hero_badge">Armenian Excellence</div>
+                <h1 data-i18n="hero_title">Building <span>Tomorrow's</span> Spaces Today</h1>
+                <p data-i18n="hero_desc">ArchiMegapolis combines architectural vision with construction expertise to create spaces that inspire, function perfectly, and stand the test of time.</p>
+                <div class="hero-buttons">
+                    <a href="#contact" class="btn btn-primary" data-i18n="hero_btn1">Start Your Project</a>
+                    <a href="#services" class="btn btn-outline" data-i18n="hero_btn2">Our Services</a>
+                </div>
+            </div>
+        </div>
+        <div class="scroll-indicator"><span data-i18n="scroll">Scroll</span><div class="scroll-line"></div></div>
+    </section>
+
+    <!-- Stats Bar -->
+    <div class="stats-bar">
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stat-item fade-up"><div class="stat-number" data-count="120">0</div><div class="stat-label" data-i18n="stat1">Projects Done</div></div>
+                <div class="stat-item fade-up"><div class="stat-number" data-count="15">0</div><div class="stat-label" data-i18n="stat2">Years Experience</div></div>
+                <div class="stat-item fade-up"><div class="stat-number" data-count="28">0</div><div class="stat-label" data-i18n="stat3">Happy Clients</div></div>
+                <div class="stat-item fade-up"><div class="stat-number" data-count="3">0</div><div class="stat-label" data-i18n="stat4">Expert Team</div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- About Section -->
+    <section class="section about" id="about">
+        <div class="container">
+            <div class="about-grid">
+                <div class="about-image fade-left">
+                    <div class="about-img-main">
+                        <div class="arch-icon">
+                            <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <rect x="20" y="80" width="160" height="100" stroke="#c9a96e" stroke-width="2" fill="none"/>
+                                <polygon points="100,20 20,80 180,80" stroke="#c9a96e" stroke-width="2" fill="none"/>
+                                <rect x="75" y="120" width="50" height="60" stroke="#c9a96e" stroke-width="2" fill="none"/>
+                                <line x1="100" y1="20" x2="100" y2="80" stroke="#c9a96e" stroke-width="1"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="about-img-accent"></div>
+                    <div class="about-experience"><div class="number">15+</div><div class="label" data-i18n="about_exp">Years Excellence</div></div>
+                </div>
+                <div class="about-content fade-right">
+                    <div class="section-tag" data-i18n="about_tag">About ArchiMegapolis</div>
+                    <h3 data-i18n="about_title">Your Trusted Architecture & Construction Partner in Armenia</h3>
+                    <p data-i18n="about_p1">At ArchiMegapolis, we bring together creative architectural design and precise construction execution under one roof. Our integrated approach ensures your vision becomes reality — on time, on budget, and beyond expectations.</p>
+                    <p data-i18n="about_p2">Led by Architect Karo Ayvazyan, Constructor Karen Badalyan, and Project Head Hasmik Gevorgyan, our team delivers personalized service with Armenian craftsmanship and international standards.</p>
+                    <div class="about-features">
+                        <div class="about-feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg><span data-i18n="about_f1">Full-Service Approach</span></div>
+                        <div class="about-feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg><span data-i18n="about_f2">Local Expertise</span></div>
+                        <div class="about-feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg><span data-i18n="about_f3">Quality Materials</span></div>
+                        <div class="about-feature"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg><span data-i18n="about_f4">Transparent Process</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section class="section services" id="services">
+        <div class="container">
+            <div class="section-header fade-up">
+                <div class="section-tag" data-i18n="services_tag">What We Do</div>
+                <h2 class="section-title" data-i18n="services_title">Our Services</h2>
+                <p class="section-subtitle" data-i18n="services_subtitle">From initial concept to final construction, we handle every detail of your architectural project.</p>
+                <div class="section-divider"></div>
+            </div>
+            <div class="services-grid">
+                <div class="service-card fade-up">
+                    <div class="service-number">01</div>
+                    <div class="service-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M3 7v1a3 3 0 006 0V7m0 1a3 3 0 006 0V7m0 1a3 3 0 006 0V7H3l2-4h14l2 4"/></svg></div>
+                    <h3 data-i18n="s1_title">Architectural Design</h3>
+                    <p data-i18n="s1_desc">Creative, functional designs tailored to your needs, site conditions, and Armenian building regulations.</p>
+                </div>
+                <div class="service-card fade-up">
+                    <div class="service-number">02</div>
+                    <div class="service-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
+                    <h3 data-i18n="s2_title">Construction Management</h3>
+                    <p data-i18n="s2_desc">Expert oversight of every construction phase, ensuring quality, safety, and timely completion.</p>
+                </div>
+                <div class="service-card fade-up">
+                    <div class="service-number">03</div>
+                    <div class="service-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg></div>
+                    <h3 data-i18n="s3_title">Interior Design</h3>
+                    <p data-i18n="s3_desc">Beautiful, practical interior solutions that complement the architecture and enhance daily living.</p>
+                </div>
+                <div class="service-card fade-up">
+                    <div class="service-number">04</div>
+                    <div class="service-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>
+                    <h3 data-i18n="s4_title">3D Visualization</h3>
+                    <p data-i18n="s4_desc">Photorealistic renderings and virtual tours to visualize your project before construction begins.</p>
+                </div>
+                <div class="service-card fade-up">
+                    <div class="service-number">05</div>
+                    <div class="service-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+                    <h3 data-i18n="s5_title">Permit Assistance</h3>
+                    <p data-i18n="s5_desc">Guidance through Armenian building permits and regulatory approvals for a smooth project start.</p>
+                </div>
+                <div class="service-card fade-up">
+                    <div class="service-number">06</div>
+                    <div class="service-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 20h20M5 20V8l7-5 7 5v12M9 20v-4h6v4"/></svg></div>
+                    <h3 data-i18n="s6_title">Renovation & Restoration</h3>
+                    <p data-i18n="s6_desc">Sensitive upgrades and restorations that honor existing structures while adding modern functionality.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Team Section -->
+    <section class="section team" id="team">
+        <div class="container">
+            <div class="section-header fade-up">
+                <div class="section-tag" data-i18n="team_tag">Our Team</div>
+                <h2 class="section-title" data-i18n="team_title">Meet the Experts</h2>
+                <p class="section-subtitle" data-i18n="team_subtitle">Three professionals, one unified vision: delivering exceptional architectural results for you.</p>
+                <div class="section-divider"></div>
+            </div>
+            <div class="team-grid">
+                <!-- Karo Ayvazyan - Architect -->
+                <div class="team-card fade-up">
+                    <div class="team-photo"><div class="team-avatar">KA</div></div>
+                    <div class="team-info">
+                        <h3 data-i18n="t1_name">Karo Ayvazyan</h3>
+                        <span data-i18n="t1_role">Architect</span>
+                        <span class="team-role" data-i18n="t1_desc">Creative vision & design leadership</span>
+                        <div class="team-socials">
+                            <a href="#" aria-label="LinkedIn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-4 0v7h-4v-7a6 6 0 016-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg></a>
+                        </div>
+                    </div>
+                </div>
+                <!-- Karen Badalyan - Constructor -->
+                <div class="team-card fade-up">
+                    <div class="team-photo"><div class="team-avatar">KB</div></div>
+                    <div class="team-info">
+                        <h3 data-i18n="t2_name">Karen Badalyan</h3>
+                        <span data-i18n="t2_role">Constructor</span>
+                        <span class="team-role" data-i18n="t2_desc">Construction execution & quality control</span>
+                        <div class="team-socials">
+                            <a href="#" aria-label="LinkedIn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-4 0v7h-4v-7a6 6 0 016-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg></a>
+                        </div>
+                    </div>
+                </div>
+                <!-- Hasmik Gevorgyan - Head -->
+                <div class="team-card fade-up">
+                    <div class="team-photo"><div class="team-avatar">HG</div></div>
+                    <div class="team-info">
+                        <h3 data-i18n="t3_name">Hasmik Gevorgyan</h3>
+                        <span data-i18n="t3_role">Project Head</span>
+                        <span class="team-role" data-i18n="t3_desc">Client relations & project coordination</span>
+                        <div class="team-socials">
+                            <a href="#" aria-label="LinkedIn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-4 0v7h-4v-7a6 6 0 016-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="section contact" id="contact">
+        <div class="container">
+            <div class="section-header fade-up">
+                <div class="section-tag" data-i18n="contact_tag">Get In Touch</div>
+                <h2 class="section-title" data-i18n="contact_title">Contact ArchiMegapolis</h2>
+                <p class="section-subtitle" data-i18n="contact_subtitle">Ready to start your project? Reach out — we're here to bring your vision to life.</p>
+                <div class="section-divider"></div>
+            </div>
+            <div class="contact-grid">
+                <div class="contact-info fade-left">
+                    <h3 data-i18n="contact_info_title">Let's Build Something Great</h3>
+                    <p data-i18n="contact_info_desc">Whether you're planning a new home, commercial space, or renovation, our team is ready to help you every step of the way.</p>
+                    <div class="contact-item">
+                        <div class="contact-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+                        <div><h4 data-i18n="contact_address_label">Location</h4><p data-i18n="contact_address">Yerevan, Armenia</p></div>
+                    </div>
+                    <div class="contact-item">
+                        <div class="contact-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg></div>
+                        <div><h4 data-i18n="contact_phone_label">Phone</h4><a href="tel:+37494567416">+374 94 567 416</a></div>
+                    </div>
+                    <div class="contact-item">
+                        <div class="contact-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
+                        <div><h4 data-i18n="contact_email_label">Email</h4><a href="mailto:archimegapolis@gmail.com">archimegapolis@gmail.com</a></div>
+                    </div>
+                    <div class="contact-item">
+                        <div class="contact-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+                        <div><h4 data-i18n="contact_hours_label">Working Hours</h4><p data-i18n="contact_hours">Mon — Sat: 9:00 — 19:00</p></div>
+                    </div>
+                </div>
+                <div class="contact-form fade-right">
+                    <form id="contactForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label data-i18n="form_name">Full Name</label>
+                                <input type="text" data-i18n-placeholder="form_name_ph" required>
+                            </div>
+                            <div class="form-group">
+                                <label data-i18n="form_email">Email</label>
+                                <input type="email" data-i18n-placeholder="form_email_ph" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label data-i18n="form_phone">Phone</label>
+                                <input type="tel" data-i18n-placeholder="form_phone_ph">
+                            </div>
+                            <div class="form-group">
+                                <label data-i18n="form_service">Service Needed</label>
+                                <select>
+                                    <option value="" data-i18n="form_select">Select a service</option>
+                                    <option value="design" data-i18n="s1_title">Architectural Design</option>
+                                    <option value="construction" data-i18n="s2_title">Construction Management</option>
+                                    <option value="interior" data-i18n="s3_title">Interior Design</option>
+                                    <option value="3d" data-i18n="s4_title">3D Visualization</option>
+                                    <option value="permit" data-i18n="s5_title">Permit Assistance</option>
+                                    <option value="renovation" data-i18n="s6_title">Renovation</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="form_message">Project Details</label>
+                            <textarea data-i18n-placeholder="form_message_ph" required></textarea>
+                        </div>
+                        <button type="submit" class="form-submit" data-i18n="form_submit">Send Message</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-about">
+                    <a href="#" class="logo">
+                        <div class="logo-img">AM</div>
+                        <div>
+                            <div class="logo-text">Archi<span>Megapolis</span></div>
+                            <div class="logo-tagline">Design & Build</div>
+                        </div>
+                    </a>
+                    <p data-i18n="footer_about">Armenian architectural excellence combining creative design with expert construction. Your vision, our expertise, exceptional results.</p>
+                    <div class="footer-socials">
+                        <a href="#" aria-label="Facebook"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg></a>
+                        <a href="#" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/></svg></a>
+                        <a href="#" aria-label="LinkedIn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-4 0v7h-4v-7a6 6 0 016-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg></a>
+                    </div>
+                </div>
+                <div>
+                    <h4 data-i18n="footer_links">Quick Links</h4>
+                    <ul class="footer-links">
+                        <li><a href="#about" data-i18n="nav_about">About</a></li>
+                        <li><a href="#services" data-i18n="nav_services">Services</a></li>
+                        <li><a href="#team" data-i18n="nav_team">Team</a></li>
+                        <li><a href="#contact" data-i18n="nav_contact">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-contact">
+                    <h4 data-i18n="footer_contact">Contact</h4>
+                    <p>📍 Yerevan, Armenia</p>
+                    <p>📞 <a href="tel:+37494567416">+374 94 567 416</a></p>
+                    <p>✉️ <a href="mailto:archimegapolis@gmail.com">archimegapolis@gmail.com</a></p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p data-i18n="footer_copy">© 2026 ArchiMegapolis. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Back to Top -->
+    <button class="back-to-top" id="backToTop" aria-label="Back to top">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+    </button>
+
+    <script>
+        // ===== TRANSLATIONS =====
+        const translations = {
+            en: {
+                nav_home: "Home", nav_about: "About", nav_services: "Services", nav_team: "Team", nav_contact: "Contact",
+                hero_badge: "Armenian Excellence", hero_title: 'Building <span>Tomorrow\'s</span> Spaces Today',
+                hero_desc: "ArchiMegapolis combines architectural vision with construction expertise to create spaces that inspire, function perfectly, and stand the test of time.",
+                hero_btn1: "Start Your Project", hero_btn2: "Our Services", scroll: "Scroll",
+                stat1: "Projects Done", stat2: "Years Experience", stat3: "Happy Clients", stat4: "Expert Team",
+                about_tag: "About ArchiMegapolis", about_title: "Your Trusted Architecture & Construction Partner in Armenia",
+                about_p1: "At ArchiMegapolis, we bring together creative architectural design and precise construction execution under one roof. Our integrated approach ensures your vision becomes reality — on time, on budget, and beyond expectations.",
+                about_p2: "Led by Architect Karo Ayvazyan, Constructor Karen Badalyan, and Project Head Hasmik Gevorgyan, our team delivers personalized service with Armenian craftsmanship and international standards.",
+                about_exp: "Years Excellence", about_f1: "Full-Service Approach", about_f2: "Local Expertise", about_f3: "Quality Materials", about_f4: "Transparent Process",
+                services_tag: "What We Do", services_title: "Our Services", services_subtitle: "From initial concept to final construction, we handle every detail of your architectural project.",
+                s1_title: "Architectural Design", s1_desc: "Creative, functional designs tailored to your needs, site conditions, and Armenian building regulations.",
+                s2_title: "Construction Management", s2_desc: "Expert oversight of every construction phase, ensuring quality, safety, and timely completion.",
+                s3_title: "Interior Design", s3_desc: "Beautiful, practical interior solutions that complement the architecture and enhance daily living.",
+                s4_title: "3D Visualization", s4_desc: "Photorealistic renderings and virtual tours to visualize your project before construction begins.",
+                s5_title: "Permit Assistance", s5_desc: "Guidance through Armenian building permits and regulatory approvals for a smooth project start.",
+                s6_title: "Renovation & Restoration", s6_desc: "Sensitive upgrades and restorations that honor existing structures while adding modern functionality.",
+                team_tag: "Our Team", team_title: "Meet the Experts", team_subtitle: "Three professionals, one unified vision: delivering exceptional architectural results for you.",
+                t1_name: "Karo Ayvazyan", t1_role: "Architect", t1_desc: "Creative vision & design leadership",
+                t2_name: "Karen Badalyan", t2_role: "Constructor", t2_desc: "Construction execution & quality control",
+                t3_name: "Hasmik Gevorgyan", t3_role: "Project Head", t3_desc: "Client relations & project coordination",
+                contact_tag: "Get In Touch", contact_title: "Contact ArchiMegapolis", contact_subtitle: "Ready to start your project? Reach out — we're here to bring your vision to life.",
+                contact_info_title: "Let's Build Something Great", contact_info_desc: "Whether you're planning a new home, commercial space, or renovation, our team is ready to help you every step of the way.",
+                contact_address_label: "Location", contact_address: "Yerevan, Armenia",
+                contact_phone_label: "Phone", contact_email_label: "Email", contact_hours_label: "Working Hours", contact_hours: "Mon — Sat: 9:00 — 19:00",
+                form_name: "Full Name", form_name_ph: "Your name", form_email: "Email", form_email_ph: "your@email.com",
+                form_phone: "Phone", form_phone_ph: "+374 XX XXX XXX", form_service: "Service Needed", form_select: "Select a service",
+                form_message: "Project Details", form_message_ph: "Tell us about your project...", form_submit: "Send Message",
+                footer_about: "Armenian architectural excellence combining creative design with expert construction. Your vision, our expertise, exceptional results.",
+                footer_links: "Quick Links", footer_contact: "Contact", footer_copy: "© 2026 ArchiMegapolis. All rights reserved."
+            },
+            hy: {
+                nav_home: "Գլխավոր", nav_about: "Մեր մասին", nav_services: "Ծառայություններ", nav_team: "Թիմ", nav_contact: "Կապ",
+                hero_badge: "Հայկական Գերազանցություն", hero_title: 'Կառուցում ենք <span>Վաղվա</span> Տարածքները Այսօր',
+                hero_desc: "ArchiMegapolis-ը միավորում է ճարտարապետական տեսլականը և շինարարական փորձառությունը՝ ստեղծելով տարածքներ, որոնք ոգեշնչում են, կատարելապես գործում և դիմանում ժամանակի փորձությանը:",
+                hero_btn1: "Սկսել Ձեր Նախագիծը", hero_btn2: "Մեր Ծառայությունները", scroll: "Ոլորել",
+                stat1: "Ավարտված Նախագծեր", stat2: "Տարիների Փորձ", stat3: "Երջանիկ Հաճախորդներ", stat4: "Փորձառու Թիմ",
+                about_tag: "ArchiMegapolis-ի Մասին", about_title: "Ձեր Վստահելի Ճարտարապետական Գործընկերը Հայաստանում",
+                about_p1: "ArchiMegapolis-ում մենք միավորում ենք ստեղծագործ ճարտարապետական դիզայնը և ճշգրիտ շինարարական կատարումը մեկ հարթակում: Մեր ինտեգրված մոտեցումը ապահովում է, որ Ձեր տեսլականը դառնա իրականություն՝ ժամանակին, բյուջեով և ակնկալիքներից վեր:",
+                about_p2: "Ղեկավարվելով ճարտարապետ Կարո Այվազյանի, կառուցող Կարեն Բադալյանի և նախագծի ղեկավար Հասմիկ Գևորգյանի կողմից, մեր թիմը ապահովում է անհատականացված սպասարկում՝ հայկական վարպետությամբ և միջազգային ստանդարտներով:",
+                about_exp: "Տարիների Գերազանցություն", about_f1: "Լիարժեք Մոտեցում", about_f2: "Տեղական Փորձառություն", about_f3: "Որակյալ Նյութեր", about_f4: "Թափանցիկ Գործընթաց",
+                services_tag: "Ինչ ենք Անում", services_title: "Մեր Ծառայությունները", services_subtitle: "Սկզբնական հայեցակարգից մինչև վերջնական կառուցում՝ մենք կառավարում ենք Ձեր ճարտարապետական նախագծի յուրաքանչյուր մանրուք:",
+                s1_title: "Ճարտարապետական Դիզայն", s1_desc: "Ստեղծագործ, ֆունկցիոնալ դիզայններ՝ հարմարեցված Ձեր կարիքներին, տեղանքի պայմաններին և հայկական շինարարական կանոնակարգերին:",
+                s2_title: "Շինարարության Կառավարում", s2_desc: "Շինարարության յուրաքանչյուր փուլի փորձագիտական վերահսկողություն՝ ապահովելով որակը, անվտանգությունը և ժամանակին ավարտը:",
+                s3_title: "Ինտերիերի Դիզայն", s3_desc: "Գեղեցիկ, գործնական ինտերիերի լուծումներ, որոնք լրացնում են ճարտարապետությունը և բարելավում առօրյան:",
+                s4_title: "3D Վիզուալիզացիա", s4_desc: "Ֆոտոռեալիստիկ ռենդերներ և վիրտուալ շրջայցեր՝ Ձեր նախագիծը տեսնելու համար նախքան շինարարությունը:",
+                s5_title: "Թույլտվությունների Աջակցություն", s5_desc: "Ուղղորդում հայկական շինարարական թույլտվությունների և կարգավորող հաստատումների միջով՝ հարթ նախագծի մեկնարկի համար:",
+                s6_title: "Վերակառուցում և Վերականգնում", s6_desc: "Զգայուն թարմացումներ և վերականգնումներ, որոնք հարգում են գոյություն ունեցող կառույցները՝ ավելացնելով ժամանակակից ֆունկցիոնալություն:",
+                team_tag: "Մեր Թիմը", team_title: "Ծանոթացեք Փորձագետների Հետ", team_subtitle: "Երեք մասնագետ, մեկ միասնական տեսլական՝ Ձեզ համար բացառիկ ճարտարապետական արդյունքներ ապահովելու համար:",
+                t1_name: "Կարո Այվազյան", t1_role: "Ճարտարապետ", t1_desc: "Ստեղծագործ տեսլական և դիզայնի ղեկավարում",
+                t2_name: "Կարեն Բադալյան", t2_role: "Կառուցող", t2_desc: "Շինարարական կատարում և որակի վերահսկողություն",
+                t3_name: "Հասմիկ Գևորգյան", t3_role: "Նախագծի Ղեկավար", t3_desc: "Հաճախորդների հետ կապ և նախագծի համակարգում",
+                contact_tag: "Կապ Հաստատել", contact_title: "Կապ ArchiMegapolis-ի Հետ", contact_subtitle: "Պատրա՞ստ եք սկսել Ձեր նախագիծը: Կապ հաստատեք՝ մենք այստեղ ենք՝ Ձեր տեսլականը կյանքի կոչելու համար:",
+                contact_info_title: "Եկեք Ինչ-Որ Մեծ Բան Կառուցենք", contact_info_desc: "Անկախ նրանից, թե դուք պլանավորում եք նոր տուն, առևտրային տարածք, թե վերակառուցում, մեր թիմը պատրաստ է օգնել Ձեզ յուրաքանչյուր քայլի ընթացքում:",
+                contact_address_label: "Գտնվելու Վայր", contact_address: "Երևան, Հայաստան",
+                contact_phone_label: "Հեռախոս", contact_email_label: "Էլ. հասցե", contact_hours_label: "Աշխատանքային Ժամեր", contact_hours: "Երկ — Շբթ: 9:00 — 19:00",
+                form_name: "Ամբողջական Անուն", form_name_ph: "Ձեր անունը", form_email: "Էլ. հասցե", form_email_ph: "your@email.com",
+                form_phone: "Հեռախոս", form_phone_ph: "+374 XX XXX XXX", form_service: "Անհրաժեշտ Ծառայություն", form_select: "Ընտրել ծառայություն",
+                form_message: "Նախագծի Մանրամասներ", form_message_ph: "Պատմեք մեզ Ձեր նախագծի մասին...", form_submit: "Ուղարկել Հաղորդագրություն",
+                footer_about: "Հայկական ճարտարապետական գերազանցություն՝ միավորելով ստեղծագործ դիզայնը փորձագիտական շինարարության հետ: Ձեր տեսլականը, մեր փորձառությունը, բացառիկ արդյունքներ:",
+                footer_links: "Արագ Հղումներ", footer_contact: "Կապ", footer_copy: "© 2026 ArchiMegapolis. Բոլոր իրավունքները պաշտպանված են:"
+            },
+            ru: {
+                nav_home: "Главная", nav_about: "О нас", nav_services: "Услуги", nav_team: "Команда", nav_contact: "Контакты",
+                hero_badge: "Армянское Превосходство", hero_title: 'Строим <span>Пространства Завтра</span> Сегодня',
+                hero_desc: "ArchiMegapolis объединяет архитектурное видение и строительный опыт для создания пространств, которые вдохновляют, функционируют идеально и выдерживают испытание временем.",
+                hero_btn1: "Начать Ваш Проект", hero_btn2: "Наши Услуги", scroll: "Прокрутить",
+                stat1: "Завершённых Проектов", stat2: "Лет Опыта", stat3: "Довольных Клиентов", stat4: "Экспертная Команда",
+                about_tag: "О ArchiMegapolis", about_title: "Ваш Надёжный Партнёр по Архитектуре и Строительству в Армении",
+                about_p1: "В ArchiMegapolis мы объединяем креативный архитектурный дизайн и точное строительное исполнение под одной крышей. Наш интегрированный подход гарантирует, что ваше видение станет реальностью — в срок, в рамках бюджета и сверх ожиданий.",
+                about_p2: "Под руководством архитектора Каро Айвазяна, строителя Карена Бадаляна и руководителя проекта Асмик Геворгян, наша команда предоставляет персонализированный сервис с армянским мастерством и международными стандартами.",
+                about_exp: "Лет Превосходства", about_f1: "Комплексный Подход", about_f2: "Локальная Экспертиза", about_f3: "Качественные Материалы", about_f4: "Прозрачный Процесс",
+                services_tag: "Что Мы Делаем", services_title: "Наши Услуги", services_subtitle: "От первоначальной концепции до финального строительства — мы управляем каждой деталью вашего архитектурного проекта.",
+                s1_title: "Архитектурный Дизайн", s1_desc: "Креативные, функциональные проекты, адаптированные под ваши потребности, условия участка и армянские строительные нормы.",
+                s2_title: "Управление Строительством", s2_desc: "Экспертный надзор за каждым этапом строительства, обеспечивающий качество, безопасность и своевременное завершение.",
+                s3_title: "Дизайн Интерьера", s3_desc: "Красивые, практичные интерьерные решения, дополняющие архитектуру и улучшающие повседневную жизнь.",
+                s4_title: "3D Визуализация", s4_desc: "Фотореалистичные рендеры и виртуальные туры для визуализации вашего проекта до начала строительства.",
+                s5_title: "Помощь с Разрешениями", s5_desc: "Сопровождение через армянские строительные разрешения и регуляторные согласования для гладкого старта проекта.",
+                s6_title: "Реновация и Реставрация", s6_desc: "Чуткие обновления и реставрации, уважающие существующие структуры с добавлением современной функциональности.",
+                team_tag: "Наша Команда", team_title: "Знакомьтесь с Экспертами", team_subtitle: "Три профессионала, одно единое видение: предоставление исключительных архитектурных результатов для вас.",
+                t1_name: "Каро Айвазян", t1_role: "Архитектор", t1_desc: "Креативное видение и руководство дизайном",
+                t2_name: "Карен Бадалян", t2_role: "Строитель", t2_desc: "Исполнение строительства и контроль качества",
+                t3_name: "Асмик Геворгян", t3_role: "Руководитель Проекта", t3_desc: "Взаимодействие с клиентами и координация проектов",
+                contact_tag: "Связаться", contact_title: "Контакты ArchiMegapolis", contact_subtitle: "Готовы начать ваш проект? Свяжитесь с нами — мы здесь, чтобы воплотить ваше видение в жизнь.",
+                contact_info_title: "Давайте Построим Что-то Великолепное", contact_info_desc: "Планируете ли вы новый дом, коммерческое пространство или реконструкцию, наша команда готова помочь вам на каждом этапе.",
+                contact_address_label: "Местоположение", contact_address: "Ереван, Армения",
+                contact_phone_label: "Телефон", contact_email_label: "Email", contact_hours_label: "Рабочие Часы", contact_hours: "Пн — Сб: 9:00 — 19:00",
+                form_name: "Полное Имя", form_name_ph: "Ваше имя", form_email: "Email", form_email_ph: "your@email.com",
+                form_phone: "Телефон", form_phone_ph: "+374 XX XXX XXX", form_service: "Нужная Услуга", form_select: "Выберите услугу",
+                form_message: "Детали Проекта", form_message_ph: "Расскажите нам о вашем проекте...", form_submit: "Отправить Сообщение",
+                footer_about: "Армянское архитектурное превосходство, сочетающее креативный дизайн с экспертным строительством. Ваше видение, наш опыт, исключительные результаты.",
+                footer_links: "Быстрые Ссылки", footer_contact: "Контакты", footer_copy: "© 2026 ArchiMegapolis. Все права защищены."
+            }
+        };
+
+        // ===== LANGUAGE SWITCHING =====
+        let currentLang = 'en';
+        function setLanguage(lang) {
+            currentLang = lang;
+            const html = document.documentElement;
+            if (lang === 'hy' || lang === 'ar') {
+                html.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
+                html.setAttribute('lang', lang);
+            } else {
+                html.setAttribute('dir', 'ltr');
+                html.setAttribute('lang', lang);
+            }
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[lang]?.[key]) el.innerHTML = translations[lang][key];
+            });
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                const key = el.getAttribute('data-i18n-placeholder');
+                if (translations[lang]?.[key]) el.placeholder = translations[lang][key];
+            });
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.lang === lang);
+            });
+        }
+        document.querySelectorAll('.lang-btn').forEach(btn => {
+            btn.addEventListener('click', () => setLanguage(btn.dataset.lang));
+        });
+
+        // ===== PRELOADER =====
+        window.addEventListener('load', () => {
+            setTimeout(() => document.getElementById('preloader').classList.add('hidden'), 600);
+        });
+
+        // ===== NAVBAR SCROLL =====
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => navbar.classList.toggle('scrolled', window.scrollY > 50));
+
+        // ===== MOBILE MENU =====
+        const hamburger = document.getElementById('hamburger'), mobileNav = document.getElementById('mobileNav');
+        hamburger.addEventListener('click', () => {
+            hamburger.classList.toggle('active'); mobileNav.classList.toggle('active');
+            document.body.style.overflow = mobileNav.classList.contains('active') ? 'hidden' : '';
+        });
+        mobileNav.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                hamburger.classList.remove('active'); mobileNav.classList.remove('active');
+                document.body.style.overflow = '';
+            });
+        });
+
+        // ===== ACTIVE NAV LINK =====
+        const sections = document.querySelectorAll('section[id]');
+        window.addEventListener('scroll', () => {
+            const scrollY = window.scrollY + 100;
+            sections.forEach(section => {
+                const top = section.offsetTop, height = section.offsetHeight, id = section.getAttribute('id');
+                const link = document.querySelector(`.nav-links a[href="#${id}"]`);
+                if (link) link.classList.toggle('active', scrollY >= top && scrollY < top + height);
+            });
+        });
+
+        // ===== COUNTER ANIMATION =====
+        function animateCounters() {
+            document.querySelectorAll('.stat-number').forEach(counter => {
+                const target = parseInt(counter.dataset.count), duration = 1800, step = target / (duration / 16);
+                let current = 0;
+                const update = () => {
+                    current += step;
+                    if (current < target) { counter.textContent = Math.floor(current) + '+'; requestAnimationFrame(update); }
+                    else counter.textContent = target + '+';
+                };
+                update();
+            });
+        }
+
+        // ===== SCROLL ANIMATIONS =====
+        const observer = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    if (entry.target.closest('.stats-bar')) animateCounters();
+                }
+            });
+        }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+        document.querySelectorAll('.fade-up, .fade-left, .fade-right').forEach(el => observer.observe(el));
+
+        // ===== BACK TO TOP =====
+        const backToTop = document.getElementById('backToTop');
+        window.addEventListener('scroll', () => backToTop.classList.toggle('visible', window.scrollY > 400));
+        backToTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+        // ===== FORM SUBMIT =====
+        document.getElementById('contactForm').addEventListener('submit', e => {
+            e.preventDefault();
+            const btn = e.target.querySelector('.form-submit'), original = btn.textContent;
+            btn.textContent = currentLang === 'hy' ? 'Ուղարկված ✓' : currentLang === 'ru' ? 'Отправлено ✓' : 'Sent ✓';
+            btn.style.background = '#27ae60';
+            setTimeout(() => { btn.textContent = original; btn.style.background = ''; e.target.reset(); }, 2500);
+        });
+
+        // ===== SMOOTH SCROLL =====
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    const offset = 75, top = target.getBoundingClientRect().top + window.scrollY - offset;
+                    window.scrollTo({ top, behavior: 'smooth' });
+                }
+            });
+        });
+
+        // Initialize
+        setLanguage('en');
+    </script>
+</body>
+</html>
